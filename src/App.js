@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useReducer } from 'react';
 import logo from './logo.svg';
 import './App.css';
 
@@ -20,6 +20,19 @@ const initialStories = [
     objectID: 1,
   },
 ];
+
+const storiesReducer = (state, action) => {
+  switch (action.type) {
+    case 'SET_STORIES':
+      return action.payload;
+    case 'REMOVE_STORY':
+      return state.filter(
+        story => action.payload.objectID !== story.objectID
+      )
+    default:
+      throw new Error()
+  }
+}
 
 const getAsyncStories = () =>
   new Promise(resolve =>
@@ -103,25 +116,31 @@ const getTitle = (title) => {
 const App = () => {
 
   const [searchTerm, setSearchTerm] = useSemiPersistentState('search', 'React')
-  const [stories, setStories] = useState([])
+  const [stories, dispatchStories] = useReducer(
+    storiesReducer,
+    []
+  )
   const [isLoading, setIsLoading] = useState(false)
   const [isError, setIsError] = useState(false)
 
   useEffect(() => {
     setIsLoading(true)
     getAsyncStories().then(result => {
-      setStories(result.data.stories)
+      dispatchStories({
+        type: 'SET_STORIES',
+        payload: result.data.stories
+      })
       setIsLoading(false)
     })
       .catch(() => setIsError(true))
   }, [])
 
   const handleRemoveStory = item => {
-    const newStories = stories.filter(
-      story => item.objectID !== story.objectID
-    );
 
-    setStories(newStories)
+    dispatchStories({
+      type: 'REMOVE_STORY',
+      payload: item
+    })
   }
 
   const handleChange = (event) => {
