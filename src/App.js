@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useReducer, useCallback } from 'react';
 import axios from 'axios'
-import './App.css';
+import styles from './App.module.css';
 
 const API_ENDPOINT = 'https://hn.algolia.com/api/v1/search?query=';
 
@@ -56,7 +56,7 @@ const useSemiPersistentState = (key, initialState) => {
 const Item = ({ item, onRemoveItem }) => {
 
   return (
-    <div className="item">
+    <div className={styles.item}>
       <span style={{ width: '40%' }}>
         <a href={item.url}>{item.title}</a>
       </span>
@@ -64,7 +64,7 @@ const Item = ({ item, onRemoveItem }) => {
       <span style={{ width: '10%' }}>{item.num_comments}</span>
       <span style={{ width: '10%' }}>{item.points}</span>
       <span style={{ width: '10%' }}>
-        <button type="button" onClick={() => onRemoveItem(item)} className="button button_small"> Dismiss</button>
+        <button type="button" onClick={() => onRemoveItem(item)} className={`${styles.button} ${styles.buttonSmall}`}> Dismiss</button>
       </span>
     </div>
   );
@@ -95,8 +95,8 @@ const InputWithLabel = ({ id, onInputChange, type = 'text', value, children, isF
 
   return (
     <>
-      <label htmlFor={id} className="label">{children}</label>
-      <input ref={inputRef} type={type} value={value} onChange={onInputChange} autoFocus={isFocused} className="input" />
+      <label htmlFor={id} className={styles.label}>{children}</label>
+      <input ref={inputRef} type={type} value={value} onChange={onInputChange} autoFocus={isFocused} className={styles.input} />
       <p>
         Searching for <strong>{value}</strong>.
 </p>
@@ -110,11 +110,11 @@ const SearchForm = ({
   searchTerm,
   handleChange
 }) => (
-    <form onSubmit={handleSearchSubmit} className="search-form">
+    <form onSubmit={handleSearchSubmit} className={styles.searchForm}>
       <InputWithLabel onInputChange={handleChange} id="search" type='text' searchTerm={searchTerm} value={searchTerm} isFocused>
         <strong>Search:</strong>
       </InputWithLabel>
-      <button type="submit" disabled={!searchTerm} className="button button_large">Submit</button>
+      <button type="submit" disabled={!searchTerm} className={`${styles.button} ${styles.buttonLarge}`}>Submit</button>
     </form>
   )
 
@@ -127,7 +127,7 @@ const App = () => {
   )
 
   const [url, setUrl] = useState(
-    `${API_ENDPOINT}${searchTerm}`
+    `${API_ENDPOINT} ${searchTerm}`
   );
 
   const handleFetchStories = useCallback(async () => {
@@ -168,8 +168,8 @@ const App = () => {
   };
 
   return (
-    <div className="container">
-      <h1 className="headline-primary">My Hacker Stories</h1>
+    <div className={styles.container}>
+      <h1 className={styles.headlinePrimary}>My Hacker Stories</h1>
       <SearchForm handleSearchSubmit={handleSearchSubmit} searchTerm={searchTerm} handleChange={handleChange} />
       {stories.isError && <p>Something went wrong...</p>}
       {stories.isLoading ? (
