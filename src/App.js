@@ -56,15 +56,15 @@ const useSemiPersistentState = (key, initialState) => {
 const Item = ({ item, onRemoveItem }) => {
 
   return (
-    <div>
-      <span>
+    <div className="item">
+      <span style={{ width: '40%' }}>
         <a href={item.url}>{item.title}</a>
       </span>
-      <span>{item.author}</span>
-      <span>{item.num_comments}</span>
-      <span>{item.points}</span>
-      <span>
-        <button type="button" onClick={() => onRemoveItem(item)}> Dismiss</button>
+      <span style={{ width: '30%' }}>{item.author}</span>
+      <span style={{ width: '10%' }}>{item.num_comments}</span>
+      <span style={{ width: '10%' }}>{item.points}</span>
+      <span style={{ width: '10%' }}>
+        <button type="button" onClick={() => onRemoveItem(item)} className="button button_small"> Dismiss</button>
       </span>
     </div>
   );
@@ -95,9 +95,8 @@ const InputWithLabel = ({ id, onInputChange, type = 'text', value, children, isF
 
   return (
     <>
-      <h1>My Hacker Stories</h1>
-      <label htmlFor={id}>{children}</label>
-      <input ref={inputRef} type={type} value={value} onChange={onInputChange} autoFocus={isFocused} />
+      <label htmlFor={id} className="label">{children}</label>
+      <input ref={inputRef} type={type} value={value} onChange={onInputChange} autoFocus={isFocused} className="input" />
       <p>
         Searching for <strong>{value}</strong>.
 </p>
@@ -106,21 +105,16 @@ const InputWithLabel = ({ id, onInputChange, type = 'text', value, children, isF
 }
 
 
-
-const getTitle = (title) => {
-  return title
-}
-
 const SearchForm = ({
   handleSearchSubmit,
   searchTerm,
   handleChange
 }) => (
-    <form onSubmit={handleSearchSubmit}>
+    <form onSubmit={handleSearchSubmit} className="search-form">
       <InputWithLabel onInputChange={handleChange} id="search" type='text' searchTerm={searchTerm} value={searchTerm} isFocused>
         <strong>Search:</strong>
       </InputWithLabel>
-      <button type="submit" disabled={!searchTerm}>Submit</button>
+      <button type="submit" disabled={!searchTerm} className="button button_large">Submit</button>
     </form>
   )
 
@@ -174,18 +168,15 @@ const App = () => {
   };
 
   return (
-    <div className="App">
-      <h1>Hello {getTitle('React')} </h1>
+    <div className="container">
+      <h1 className="headline-primary">My Hacker Stories</h1>
       <SearchForm handleSearchSubmit={handleSearchSubmit} searchTerm={searchTerm} handleChange={handleChange} />
-      <hr />
       {stories.isError && <p>Something went wrong...</p>}
       {stories.isLoading ? (
         <p>Loading...</p>
       ) : (
           <List list={stories.data} onRemoveItem={handleRemoveStory} />
         )}
-
-      <hr />
     </div>
   );
 }
