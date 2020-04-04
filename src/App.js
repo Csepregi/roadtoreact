@@ -111,6 +111,19 @@ const getTitle = (title) => {
   return title
 }
 
+const SearchForm = ({
+  handleSearchSubmit,
+  searchTerm,
+  handleChange
+}) => (
+    <form onSubmit={handleSearchSubmit}>
+      <InputWithLabel onInputChange={handleChange} id="search" type='text' searchTerm={searchTerm} value={searchTerm} isFocused>
+        <strong>Search:</strong>
+      </InputWithLabel>
+      <button type="submit" disabled={!searchTerm}>Submit</button>
+    </form>
+  )
+
 const App = () => {
 
   const [searchTerm, setSearchTerm] = useSemiPersistentState('search', 'React')
@@ -123,21 +136,19 @@ const App = () => {
     `${API_ENDPOINT}${searchTerm}`
   );
 
-
-  const handleFetchStories = useCallback(() => {
+  const handleFetchStories = useCallback(async () => {
     dispatchStories({ type: 'STORIES_FETCH_INIT' })
 
-    axios
-      .get(url)
-      .then(result => {
-        console.log(result)
-        dispatchStories({
-          type: 'STORIES_FETCH_SUCCESS',
-          payload: result.data.hits
-        })
+    try {
+      const result = await axios.get(url)
+      dispatchStories({
+        type: 'STORIES_FETCH_SUCCESS',
+        payload: result.data.hits
       })
-      .catch(() => dispatchStories({ type: 'STORIES_FETCH_FAILURE' }))
-  }, [url])
+    } catch (e) {
+      dispatchStories({ type: 'STORIES_FETCH_FAILURE' })
+    }
+  }, [url]);
 
   useEffect(() => {
     handleFetchStories()
@@ -157,23 +168,15 @@ const App = () => {
     setSearchTerm(event.target.value)
   }
 
-  const handleSearchSubmit = () => {
+  const handleSearchSubmit = (event) => {
+    event.preventDefault()
     setUrl(`${API_ENDPOINT}${searchTerm}`);
   };
 
   return (
     <div className="App">
       <h1>Hello {getTitle('React')} </h1>
-      <InputWithLabel onInputChange={handleChange} id="search" type='text' searchTerm={searchTerm} value={searchTerm} isFocused>
-        <strong>Search:</strong>
-      </InputWithLabel>
-      <button
-        type="button"
-        disabled={!searchTerm}
-        onClick={handleSearchSubmit}
-      >
-        Submit
-      </button>
+      <SearchForm handleSearchSubmit={handleSearchSubmit} searchTerm={searchTerm} handleChange={handleChange} />
       <hr />
       {stories.isError && <p>Something went wrong...</p>}
       {stories.isLoading ? (
