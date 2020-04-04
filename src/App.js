@@ -118,9 +118,12 @@ const App = () => {
     { data: [], isLoading: false, isError: false }
   )
 
-  const handleFetchStories = useCallback(() => {
-    if (!searchTerm) return;
+  const [url, setUrl] = useState(
+    `${API_ENDPOINT}${searchTerm}`
+  );
 
+
+  const handleFetchStories = useCallback(() => {
     dispatchStories({ type: 'STORIES_FETCH_INIT' })
 
     fetch(`${API_ENDPOINT}${searchTerm}`)
@@ -133,7 +136,7 @@ const App = () => {
         })
       })
       .catch(() => dispatchStories({ type: 'STORIES_FETCH_FAILURE' }))
-  }, [searchTerm])
+  }, [url])
 
   useEffect(() => {
     handleFetchStories()
@@ -153,6 +156,9 @@ const App = () => {
     setSearchTerm(event.target.value)
   }
 
+  const handleSearchSubmit = () => {
+    setUrl(`${API_ENDPOINT}${searchTerm}`);
+  };
 
   return (
     <div className="App">
