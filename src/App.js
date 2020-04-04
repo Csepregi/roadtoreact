@@ -1,5 +1,4 @@
-import React, { useState, useEffect, useReducer } from 'react';
-import logo from './logo.svg';
+import React, { useState, useEffect, useReducer, useCallback } from 'react';
 import './App.css';
 
 const API_ENDPOINT = 'https://hn.algolia.com/api/v1/search?query=';
@@ -119,9 +118,12 @@ const App = () => {
     { data: [], isLoading: false, isError: false }
   )
 
-  useEffect(() => {
+  const handleFetchStories = useCallback(() => {
+    if (!searchTerm) return;
+
     dispatchStories({ type: 'STORIES_FETCH_INIT' })
-    fetch(`${API_ENDPOINT}react`)
+
+    fetch(`${API_ENDPOINT}${searchTerm}`)
       .then(response => response.json())
       .then(result => {
         console.log(result)
@@ -131,7 +133,13 @@ const App = () => {
         })
       })
       .catch(() => dispatchStories({ type: 'STORIES_FETCH_FAILURE' }))
-  }, [])
+  }, [searchTerm])
+
+  useEffect(() => {
+    handleFetchStories()
+  }, [handleFetchStories])
+
+
 
   const handleRemoveStory = item => {
 
@@ -145,10 +153,6 @@ const App = () => {
     setSearchTerm(event.target.value)
   }
 
-  const searchedStories = stories.data.filter(story =>
-    story.title
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase()))
 
   return (
     <div className="App">
@@ -156,12 +160,19 @@ const App = () => {
       <InputWithLabel onInputChange={handleChange} id="search" type='text' searchTerm={searchTerm} value={searchTerm} isFocused>
         <strong>Search:</strong>
       </InputWithLabel>
+      <button
+        type="button"
+        disabled={!searchTerm}
+        onClick={handleSearchSubmit}
+      >
+        Submit
+      </button>
       <hr />
       {stories.isError && <p>Something went wrong...</p>}
       {stories.isLoading ? (
         <p>Loading...</p>
       ) : (
-          <List list={searchedStories} onRemoveItem={handleRemoveStory} />
+          <List list={stories.data} onRemoveItem={handleRemoveStory} />
         )}
 
       <hr />
