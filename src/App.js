@@ -113,17 +113,31 @@ const storiesReducer = (state, action) => {
   }
 }
 
+const getSumComments = stories => {
+  return stories.data.reduce(
+    (result, value) => result + value.num_comments,
+    0
+  );
+};
+
 
 
 
 
 const useSemiPersistentState = (key, initialState) => {
+  const isMounted = React.useRef(false);
+
   const [value, setValue] = useState(
     localStorage.getItem(key) || initialState
   );
 
   useEffect(() => {
-    localStorage.setItem(key, value);
+    if (!isMounted.current) {
+      isMounted.current = true;
+    } else {
+      console.log('A')
+      localStorage.setItem(key, value);
+    }
   }, [value, key]);
 
   return [value, setValue];
@@ -149,10 +163,13 @@ const Item = ({ item, onRemoveItem }) => {
 }
 
 
-const List = ({ list, onRemoveItem }) =>
+const List = React.memo(({ list, onRemoveItem }) =>
+  console.log('B:List') ||
+
   list.map(item =>
     <Item key={item.objectID} item={item} onRemoveItem={onRemoveItem} />
-  );
+  )
+);
 
 
 const TextComp = (props) => {
@@ -228,13 +245,13 @@ const App = () => {
 
 
 
-  const handleRemoveStory = item => {
+  const handleRemoveStory = React.useCallback(item => {
 
     dispatchStories({
       type: 'REMOVE_STORY',
       payload: item
     })
-  }
+  }, []);
 
   const handleChange = (event) => {
     setSearchTerm(event.target.value)
@@ -245,9 +262,14 @@ const App = () => {
     setUrl(`${API_ENDPOINT}${searchTerm}`);
   };
 
+  const sumComments = React.useMemo(() => getSumComments(stories),
+    [stories]);
+
+  console.log('B:App');
+
   return (
     <StyledContainer>
-      <StyledHeadlinePrimary>My Hacker Stories</StyledHeadlinePrimary>
+      <StyledHeadlinePrimary>My Hacker Stories with {sumComments} comments </StyledHeadlinePrimary>
       <SearchForm handleSearchSubmit={handleSearchSubmit} searchTerm={searchTerm} handleChange={handleChange} />
       {stories.isError && <p>Something went wrong...</p>}
       {stories.isLoading ? (
