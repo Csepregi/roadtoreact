@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ReactComponent as Check } from '../check.svg';
 import styled from 'styled-components';
+import { sortBy } from 'lodash';
 
 const StyledItem = styled.div`
 display: flex;
@@ -40,7 +41,15 @@ const Svgstyle = styled.svg`
   fill: #ffffff;
   stroke: #ffffff;
 }
-  `;
+	`;
+
+const SORTS = {
+	NONE: list => list,
+	TITLE: list => sortBy(list, 'title'),
+	AUTHOR: list => sortBy(list, 'author'),
+	COMMENT: list => sortBy(list, 'num_comments').reverse(),
+	POINT: list => sortBy(list, 'points').reverse(),
+};
 
 
 const Item = ({ item, onRemoveItem }) => {
@@ -62,12 +71,36 @@ const Item = ({ item, onRemoveItem }) => {
 	);
 }
 
-const List = React.memo(({ list, onRemoveItem }) =>
-	console.log('B:List') ||
+const List = React.memo(({ list, onRemoveItem }) => {
+	const [sort, setSort] = useState({
+		sortKey: 'NONE',
+		isReverse: false,
+	})
 
-	list.map(item =>
-		<Item key={item.objectID} item={item} onRemoveItem={onRemoveItem} />
+	const handleSort = sortKey => {
+		const isReverse = sort.sortKey === sortKey && !sort.isReverse
+		setSort({ sortKey, isReverse })
+	};
+
+	const sortFunction = SORTS[sort.sortKey];
+	const sortedList = sort.isReverse
+		? sortFunction(list).reverse()
+		: sortFunction(list)
+
+	return (
+		< div >
+			<StyledItem>
+				<StyledColumn width="40%"><button type="button" onClick={() => handleSort('TITLE')}>Title</button></StyledColumn>
+				<StyledColumn width='30%'><button type="button" onClick={() => handleSort('AUTHOR')}>Author</button></StyledColumn>
+				<StyledColumn width='10%'><button type="button" onClick={() => handleSort('COMMENT')}>Comments</button></StyledColumn>
+				<StyledColumn width='10%'><button type="button" onClick={() => handleSort('POINT')}>Point</button></StyledColumn>
+				<StyledColumn width='10%'>Actions</StyledColumn>
+			</StyledItem >
+			{
+				sortedList.map(item => (
+					<Item key={item.objectID} item={item} onRemoveItem={onRemoveItem} />
+				))}
+		</div >
 	)
-);
-
+})
 export default List
