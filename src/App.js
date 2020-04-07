@@ -83,6 +83,42 @@ const useSemiPersistentState = (key, initialState) => {
   return [value, setValue];
 };
 
+const extractSearchTerm = url => url.replace(API_ENDPOINT, '');
+
+const getLastSearches = urls =>
+  urls
+    .reduce((result, url, index) => {
+      const searchTerm = extractSearchTerm(url)
+      if (index === 0) {
+        return result.concat(searchTerm)
+      }
+      const previousSearchTerm = result[result.length - 1];
+      if (searchTerm === previousSearchTerm) {
+        return result;
+      } else {
+        return result.concat(searchTerm);
+      }
+    }, [])
+    .slice(-6)
+    .slice(0, -1)
+    .map(extractSearchTerm)
+
+const getUrl = searchTerm => `${API_ENDPOINT}${searchTerm}`
+
+
+const LastSearches = ({ lastSearches, onLastSearch }) => (
+  <>
+    {lastSearches.map((searchTerm, index) => (
+      <button
+        key={searchTerm + index}
+        type="button"
+        onClick={() => onLastSearch(searchTerm)}
+      >
+        {searchTerm}
+      </button>
+    ))}
+  </>
+)
 
 
 const App = () => {
@@ -93,15 +129,14 @@ const App = () => {
     { data: [], isLoading: false, isError: false }
   )
 
-  const [url, setUrl] = useState(
-    `${API_ENDPOINT} ${searchTerm}`
-  );
+  const [urls, setUrls] = useState([getUrl(searchTerm)]);
 
   const handleFetchStories = useCallback(async () => {
     dispatchStories({ type: 'STORIES_FETCH_INIT' })
 
     try {
-      const result = await axios.get(url)
+      const lastUrl = urls[urls.length - 1];
+      const result = await axios.get(lastUrl)
       dispatchStories({
         type: 'STORIES_FETCH_SUCCESS',
         payload: result.data.hits
@@ -109,7 +144,7 @@ const App = () => {
     } catch (e) {
       dispatchStories({ type: 'STORIES_FETCH_FAILURE' })
     }
-  }, [url]);
+  }, [urls]);
 
   useEffect(() => {
     handleFetchStories()
@@ -130,19 +165,34 @@ const App = () => {
   }
 
   const handleSearchSubmit = (event) => {
+    handleSearch(searchTerm);
     event.preventDefault()
-    setUrl(`${API_ENDPOINT}${searchTerm}`);
   };
 
   const sumComments = React.useMemo(() => getSumComments(stories),
     [stories]);
 
-  console.log('B:App');
+  const handleLastSearch = searchTerm => {
+    setSearchTerm(searchTerm)
+    handleSearch(searchTerm)
+  }
+
+  const handleSearch = searchTerm => {
+    const url = getUrl(searchTerm);
+    setUrls(urls.concat(url));
+  }
+
+  const lastSearches = getLastSearches(urls)
 
   return (
     <StyledContainer>
       <StyledHeadlinePrimary>My Hacker Stories with {sumComments} comments </StyledHeadlinePrimary>
       <SearchForm handleSearchSubmit={handleSearchSubmit} searchTerm={searchTerm} handleChange={handleChange} />
+      <LastSearches
+        lastSearches={lastSearches}
+        onLastSearch={handleLastSearch}
+      />
+
       {stories.isError && <p>Something went wrong...</p>}
       {stories.isLoading ? (
         <p>Loading...</p>
