@@ -110,7 +110,6 @@ const getLastSearches = urls =>
     }, [])
     .slice(-6)
     .slice(0, -1)
-    .map(extractSearchTerm)
 
 const getUrl = (searchTerm, page) => `${API_BASE}${API_SEARCH}?${PARAM_SEARCH}${searchTerm}&${PARAM_PAGE}${page}`;
 
@@ -127,7 +126,7 @@ const LastSearches = ({ lastSearches, onLastSearch }) => (
       </button>
     ))}
   </>
-)
+);
 
 
 const App = () => {
@@ -186,7 +185,7 @@ const App = () => {
 
   const handleLastSearch = searchTerm => {
     setSearchTerm(searchTerm)
-    handleSearch(searchTerm, 0)
+    handleSearch(searchTerm)
   }
 
   const handleSearch = (searchTerm, page) => {
